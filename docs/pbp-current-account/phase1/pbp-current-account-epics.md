@@ -353,10 +353,10 @@ Feature: Statement Generation
 
 ## Approval Checklist
 
-- [ ] All business requirements from BRD are covered by at least one epic
-- [ ] All in-scope items have corresponding features
-- [ ] Out-of-scope items are not referenced in any epic
-- [ ] BDD scenarios cover happy path and key edge cases
-- [ ] Stakeholders validated against BRD stakeholder list
-- [ ] Epic document reviewed by BA
-- [ ] Epic document approved by PO
+- [x] All business requirements from BRD are covered by at least one epic
+- [x] All in-scope items have corresponding features
+- [x] Out-of-scope items are not referenced in any epic
+- [x] BDD scenarios cover happy path and key edge cases
+- [x] Stakeholders validated against BRD stakeholder list
+- [x] Epic document reviewed by BA
+- [x] Epic document approved by PO
