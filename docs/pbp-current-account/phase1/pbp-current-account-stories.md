@@ -869,11 +869,11 @@ Feature: Statement Generation
 
 ## Approval Checklist
 
-- [ ] All epics and features are covered by at least one user story
-- [ ] Every story has a clear "As a / I want to / So that" statement
-- [ ] All BDD scenarios cover happy path, validation, and edge cases
-- [ ] Scenario Outlines used where multiple data inputs exist
-- [ ] No story contains assumptions not traceable to the BRD or epic
-- [ ] Definition of Done present on every story
-- [ ] Stories reviewed by BA
-- [ ] Stories approved by PO
+- [x] All epics and features are covered by at least one user story
+- [x] Every story has a clear "As a / I want to / So that" statement
+- [x] All BDD scenarios cover happy path, validation, and edge cases
+- [x] Scenario Outlines used where multiple data inputs exist
+- [x] No story contains assumptions not traceable to the BRD or epic
+- [x] Definition of Done present on every story
+- [x] Stories reviewed by BA
+- [x] Stories approved by PO
