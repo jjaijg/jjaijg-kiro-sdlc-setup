@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Analysis Review — Create PR for PO Approval",
+  "description": "Triggered by the BA after reviewing an epic or stories document. The agent collects the feature name and PO GitHub username, creates the feature branch, commits phase1 docs, pushes, and opens a PR with the PO as reviewer using the GitHub CLI.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The BA has triggered the analysis-review hook. You must now do the following steps in order:\n\n1. Ask the BA for two inputs in a single message:\n   - Feature name (e.g. `pbp-current-account`)\n   - PO GitHub username (e.g. `john-doe`)\n\n2. Wait for the BA to respond with both values.\n\n3. Once you have both inputs, check which document was most recently created:\n   - If `docs/[feature-name]/phase1/[feature-name]-stories.md` exists → branch suffix is `story-analysis`, PR title is `[Feature Name] — User Stories Review`\n   - Otherwise → branch suffix is `epic-analysis`, PR title is `[Feature Name] — Epic Analysis Review`\n\n4. Run the following git commands sequentially using the shell (replace placeholders with actual values):\n\n   git checkout main\n   git pull origin main\n   git checkout -b features/[feature-name]/[suffix]\n   git add docs/[feature-name]/phase1/\n   git commit -m \"feat([feature-name]): add phase1 analysis documents for PO review\"\n   git push -u origin features/[feature-name]/[suffix]\n   gh pr create --title \"[PR Title]\" --body \"## Phase 1 Analysis\\n\\nThis PR contains phase1 analysis documents derived from the BRD.\\n\\n### Review Checklist\\n- [ ] All business requirements covered\\n- [ ] BDD scenarios are accurate\\n- [ ] Out-of-scope items not included\\n\\ncc @[po-github-username]\" --reviewer [po-github-username] --base main\n\n5. Report the PR URL back to the BA.\n\n6. Remind the BA: Once the PO merges the PR, the GitHub Action will automatically mark the Approval Checklist as completed. After that, return to @sdlc-analyst to generate the next phase document."
+  }
+}

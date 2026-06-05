@@ -1,0 +1,114 @@
+name: Approve Analysis Checklist on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  update-checklist:
+    # Only run when the PR is actually merged (not just closed)
+    if: github.event.pull_request.merged == true
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Checkout main so we can commit back to it
+          ref: main
+          fetch-depth: 0
+
+      - name: Detect document type and feature name from branch
+        id: detect
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          echo "Branch: $BRANCH"
+
+          # Branch pattern: features/[feature-name]/epic-analysis or story-analysis
+          if echo "$BRANCH" | grep -qE "features/.+/epic-analysis"; then
+            FEATURE_NAME=$(echo "$BRANCH" | sed 's|features/||' | sed 's|/epic-analysis||')
+            DOC_TYPE="epics"
+          elif echo "$BRANCH" | grep -qE "features/.+/story-analysis"; then
+            FEATURE_NAME=$(echo "$BRANCH" | sed 's|features/||' | sed 's|/story-analysis||')
+            DOC_TYPE="stories"
+          else
+            echo "Branch does not match analysis pattern — skipping."
+            exit 0
+          fi
+
+          echo "feature_name=$FEATURE_NAME" >> $GITHUB_OUTPUT
+          echo "doc_type=$DOC_TYPE" >> $GITHUB_OUTPUT
+          echo "Detected feature: $FEATURE_NAME, doc type: $DOC_TYPE"
+
+      - name: Mark Approval Checklist as completed
+        if: steps.detect.outputs.feature_name != ''
+        run: |
+          FEATURE="${{ steps.detect.outputs.feature_name }}"
+          DOC_TYPE="${{ steps.detect.outputs.doc_type }}"
+          FILE="docs/${FEATURE}/phase1/${FEATURE}-${DOC_TYPE}.md"
+
+          if [ ! -f "$FILE" ]; then
+            echo "File not found: $FILE — skipping."
+            exit 0
+          fi
+
+          echo "Updating checklist in: $FILE"
+
+          # Replace all unchecked checklist items [ ] with checked [x]
+          # Only within the Approval Checklist section (lines after the heading)
+          python3 - <<'PYEOF'
+          import re, sys, os
+
+          filepath = os.environ['FILE']
+
+          with open(filepath, 'r') as f:
+              content = f.read()
+
+          # Find the Approval Checklist section and mark all items complete
+          def mark_checklist(text):
+              in_checklist = False
+              lines = text.split('\n')
+              result = []
+              for line in lines:
+                  if re.match(r'^##\s+Approval Checklist', line):
+                      in_checklist = True
+                  if in_checklist and re.match(r'^\s*-\s+\[\s+\]', line):
+                      line = re.sub(r'\[\s+\]', '[x]', line)
+                  result.append(line)
+              return '\n'.join(result)
+
+          updated = mark_checklist(content)
+
+          with open(filepath, 'w') as f:
+              f.write(updated)
+
+          print(f"Checklist updated in {filepath}")
+          PYEOF
+
+        env:
+          FILE: docs/${{ steps.detect.outputs.feature_name }}/phase1/${{ steps.detect.outputs.feature_name }}-${{ steps.detect.outputs.doc_type }}.md
+
+      - name: Commit updated checklist
+        if: steps.detect.outputs.feature_name != ''
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          FILE="docs/${{ steps.detect.outputs.feature_name }}/phase1/${{ steps.detect.outputs.feature_name }}-${{ steps.detect.outputs.doc_type }}.md"
+
+          git add "$FILE"
+
+          # Only commit if there are staged changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit — checklist may already be marked."
+          else
+            git commit -m "chore: mark approval checklist as approved for ${{ steps.detect.outputs.feature_name }} ${{ steps.detect.outputs.doc_type }} [skip ci]"
+            git push origin main
+            echo "Checklist committed and pushed."
+          fi
