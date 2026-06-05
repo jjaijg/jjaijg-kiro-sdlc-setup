@@ -1,5 +1,46 @@
 # SDLC Automation — Phase 1: Analysis Workflow Guide
 
+## Workflow Overview
+
+```mermaid
+flowchart TD
+    BRD([📄 BRD Document]) --> A
+
+    subgraph Phase1A ["🔵 Phase 1A — Epic Generation & Approval"]
+        A["BA: /sdlc-analyst generate epics"] --> B["📝 epics.md created"]
+        B --> C["BA: review & refine in Kiro"]
+        C --> D["BA: trigger Analysis Review hook"]
+        D --> E["🤖 Auto: create branch\nfeatures/.../epic-analysis"]
+        E --> F["🤖 Auto: commit, push & open PR\n+ assign PO as reviewer"]
+        F --> G["PO: review PR on GitHub"]
+        G -->|Changes requested| C
+        G -->|Approved & merged| H["⚙️ GitHub Action runs"]
+        H --> I["✅ Epic checklist auto-marked [x]"]
+    end
+
+    subgraph Phase1B ["🟣 Phase 1B — Story Generation & Approval"]
+        I --> J["BA: /sdlc-analyst generate stories"]
+        J --> K["📝 stories.md created"]
+        K --> L["BA: review & refine in Kiro"]
+        L --> M["BA: trigger Analysis Review hook"]
+        M --> N["🤖 Auto: create branch\nfeatures/.../story-analysis"]
+        N --> O["🤖 Auto: commit, push & open PR\n+ assign PO as reviewer"]
+        O --> P["PO: review PR on GitHub"]
+        P -->|Changes requested| L
+        P -->|Approved & merged| Q["⚙️ GitHub Action runs"]
+        Q --> R["✅ Stories checklist auto-marked [x]"]
+    end
+
+    R --> NEXT([🚀 Phase 2 Unlocked\nDesign / Architecture])
+
+    style Phase1A fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    style Phase1B fill:#ede9fe,stroke:#7c3aed,color:#2e1065
+    style BRD fill:#fef9c3,stroke:#ca8a04
+    style NEXT fill:#dcfce7,stroke:#16a34a
+```
+
+---
+
 ## Actors
 | Actor | Role |
 |-------|------|
